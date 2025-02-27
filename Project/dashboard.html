@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Inventory System</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="#">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Orders</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container mt-4">
+        <h2>Dashboard</h2>
+        <br>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card p-3">
+                    <h4>Products</h4>
+                    <div class="d-flex mb-2">
+                        <input type="text" id="searchBox" class="form-control me-2" placeholder="Search Products..." onkeyup="searchProducts()">
+                        <select id="sortOptions" class="form-select" onchange="sortProducts()">
+                            <option value="name">Sort by Name</option>
+                            <option value="stock">Sort by Stock</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary mb-2" onclick="addProduct()">Add Product</button>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Stock</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productTable"></tbody>
+                    </table>
+                    <h5>Total Stock: <span id="totalStock">0</span></h5>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card p-3">
+                    <h4>Stock Levels</h4>
+                    <canvas id="salesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        let salesChart;
+
+        function loadProducts() {
+            let products = JSON.parse(localStorage.getItem("products")) || [];
+            let table = document.getElementById("productTable");
+            let totalStock = 0;
+            table.innerHTML = "";
+            
+            products.forEach((product, index) => {
+                totalStock += product.stock;
+                let row = table.insertRow();
+                row.innerHTML = `
+                    <td>${product.name}</td>
+                    <td contenteditable="true" onblur="updateStock(${index}, this)">${product.stock}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="editProduct(${index})">Edit</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteProduct(${index})">Delete</button>
+                    </td>`;
+            });
+            document.getElementById("totalStock").innerText = totalStock;
+            loadSalesChart(products);
+        }
+        
+        function addProduct() {
+            let name = prompt("Enter product name:");
+            let stock = prompt("Enter stock quantity:");
+            if (name && stock) {
+                let products = JSON.parse(localStorage.getItem("products")) || [];
+                products.push({ name, stock: parseInt(stock) });
+                localStorage.setItem("products", JSON.stringify(products));
+                loadProducts();
+            }
+        }
+        
+        function editProduct(index) {
+            let products = JSON.parse(localStorage.getItem("products"));
+            let name = prompt("Enter new product name:", products[index].name);
+            if (name) {
+                products[index].name = name;
+                localStorage.setItem("products", JSON.stringify(products));
+                loadProducts();
+            }
+        }
+        
+        function updateStock(index, element) {
+            let products = JSON.parse(localStorage.getItem("products"));
+            products[index].stock = parseInt(element.innerText) || 0;
+            localStorage.setItem("products", JSON.stringify(products));
+            loadProducts();
+        }
+        
+        function deleteProduct(index) {
+            if (confirm("Are you sure you want to delete this product?")) {
+                let products = JSON.parse(localStorage.getItem("products"));
+                products.splice(index, 1);
+                localStorage.setItem("products", JSON.stringify(products));
+                loadProducts();
+            }
+        }
+        
+        function loadSalesChart(products) {
+            let ctx = document.getElementById("salesChart").getContext("2d");
+            let labels = products.map(p => p.name);
+            let data = products.map(p => p.stock);
+            
+            if (salesChart) {
+                salesChart.destroy();
+            }
+            
+            salesChart = new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: "Stock Levels",
+                        data: data,
+                        backgroundColor: "rgba(75, 192, 192, 0.6)",
+                        borderColor: "rgba(75, 192, 192, 1)",
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        loadProducts();
+    </script>
+</body>
+</html>
