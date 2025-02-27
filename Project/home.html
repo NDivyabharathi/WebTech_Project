@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Management System - Home</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .hero {
+            background: url('https://source.unsplash.com/1600x900/?warehouse,inventory') no-repeat center center/cover;
+            color: white;
+            padding: 100px 20px;
+            text-align: center;
+            opacity: 0;
+        }
+        .feature-card {
+            transition: transform 0.3s;
+            opacity: 0;
+        }
+        .feature-card:hover {
+            transform: scale(1.05);
+        }
+        .page-title {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">InventoryPro</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="#">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Stock</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Orders</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Reports</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Login</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Sign up</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="page-title">Inventory Management System</div>
+
+    <header class="hero">
+        <h1>Powerful Inventory Management at Your Fingertips</h1>
+        <p>Track stock, manage orders, and optimize your business effortlessly.</p>
+        <a href="addstock.html" class="btn btn-lg btn-success me-3">Add Stock</a>
+        <a href="dashboard.html" class="btn btn-lg btn-info">View Report</a>
+    </header>
+
+    <div class="container mt-5">
+        <div class="row text-center">
+            <div class="col-md-4">
+                <div class="card p-4 shadow feature-card">
+                    <h3>Total Products</h3>
+                    <p class="display-5" id="total-products">Loading...</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card p-4 shadow feature-card">
+                    <h3>Low Stock Alerts</h3>
+                    <p class="display-5 text-danger" id="low-stock">Loading...</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card p-4 shadow feature-card">
+                    <h3>Recent Orders</h3>
+                    <p class="display-5" id="recent-orders">Loading...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-5">
+            <div class="col-md-12">
+                <h4>Sales Performance</h4>
+                <canvas id="salesChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white text-center py-4 mt-5">
+        <p>&copy; 2025 InventoryPro | All Rights Reserved</p>
+    </footer>
+
+    <script>
+        function fetchInventoryData() {
+            let products = JSON.parse(localStorage.getItem("products")) || [];
+
+            let totalProducts = products.length;
+            let lowStockCount = products.filter(product => product.stock < 10).length;
+            let recentOrders = 45; 
+
+            document.getElementById('total-products').innerText = totalProducts;
+            document.getElementById('low-stock').innerText = lowStockCount;
+            document.getElementById('recent-orders').innerText = recentOrders;
+        }
+        
+        fetchInventoryData();
+
+        anime({
+            targets: '.hero',
+            opacity: [0, 1],
+            duration: 2000,
+            easing: 'easeInOutQuad'
+        });
+        
+        anime({
+            targets: '.feature-card',
+            opacity: [0, 1],
+            translateY: [50, 0],
+            delay: anime.stagger(300),
+            easing: 'easeOutQuad'
+        });
+
+        let ctx = document.getElementById('salesChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Sales',
+                    data: [500, 700, 1200, 900, 1400, 1800],
+                    borderColor: 'blue',
+                    borderWidth: 2,
+                    fill: false
+                }]
+            }
+        });
+    </script>
+</body>
+</html>
